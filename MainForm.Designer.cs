@@ -781,10 +781,10 @@
 			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field14, 3, 0);
 			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field13, 2, 0);
 			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field51, 0, 4);
-			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field54, 0, 4);
-			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field52, 0, 4);
-			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field55, 0, 4);
-			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field53, 0, 4);
+			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field54, 3, 4);
+			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field52, 1, 4);
+			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field55, 4, 4);
+			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field53, 2, 4);
 			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field11, 0, 0);
 			tableLayoutPanelGame5x5.Controls.Add(buttonGame5Field12, 1, 0);
 			tableLayoutPanelGame5x5.Name = "tableLayoutPanelGame5x5";

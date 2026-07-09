@@ -146,8 +146,6 @@ namespace BlackAndWhite
 		/// <returns>Inverted background color</returns>
 		private Color InvertFieldColor(Color color)
 		{
-			toolStripButtonPause.Enabled = true;
-			timer.Enabled = true;
 			sumInverts++;
 			return color == Color.Black ? Color.White : Color.Black;
 		}
@@ -294,7 +292,9 @@ namespace BlackAndWhite
 		{
 			timer.Stop();
 			timer.Enabled = false;
-			string message = $"Du hast mit {sumClicks} Klicks in {sumTicks} Ticks gewonnen.";
+			string message = Localization.wonMessage
+				.Replace(oldValue: "{sumKlicks}", newValue: sumClicks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace(oldValue: "{sumTicks}", newValue: sumTicks.ToString(provider: CultureInfo.CurrentCulture));
 			_ = MessageBox.Show(
 				text: message,
 				caption: Localization.won,
@@ -480,6 +480,8 @@ namespace BlackAndWhite
 			ushort[] centeredField)
 		{
 			sumClicks++;
+			toolStripButtonPause.Enabled = true;
+			timer.Enabled = true;
 			if (toolStripMenuItemOptionLinear.Checked)
 			{
 				InvertFields(fieldId: linearNeightbourFields);
@@ -787,9 +789,8 @@ namespace BlackAndWhite
 			toolStripMenuItemGameOptions.Enabled = true;
 			InitGameBoard();
 		}
-		/// <summary>Pause the current game when the Pause button is clicked</summary>
 
-		/// <summary>Pause a new game while the ToolStripButton</summary>
+		/// <summary>Pause the current game when the Pause button is clicked</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -830,7 +831,12 @@ namespace BlackAndWhite
 		private void Timer_Tick(object sender, EventArgs e)
 		{
 			sumTicks++;
-			toolStripLabelStatistic.Text = $@"Klicks: {sumClicks} - Ticks: {sumTicks} - Blacks: {numberBlacks} - Whites: {numberWhites} - Inverts: {sumInverts}";
+			toolStripLabelStatistic.Text = Localization.statistics
+				.Replace(oldValue: "{sumKlicks}", newValue: sumClicks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace(oldValue: "{sumTicks}", newValue: sumTicks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace(oldValue: "{numberBlacks}", newValue: numberBlacks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace(oldValue: "{numberWhites}", newValue: numberWhites.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace(oldValue: "{sumInverts}", newValue: sumInverts.ToString(provider: CultureInfo.CurrentCulture));
 		}
 
 		#endregion
