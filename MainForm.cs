@@ -292,9 +292,10 @@ namespace BlackAndWhite
 		{
 			timer.Stop();
 			timer.Enabled = false;
-			string message = Localization.wonMessage
-				.Replace(oldValue: "{sumKlicks}", newValue: sumClicks.ToString(provider: CultureInfo.CurrentCulture))
-				.Replace(oldValue: "{sumTicks}", newValue: sumTicks.ToString(provider: CultureInfo.CurrentCulture));
+			string message = new StringBuilder(Localization.wonMessage)
+				.Replace("{sumKlicks}", sumClicks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace("{sumTicks}", sumTicks.ToString(provider: CultureInfo.CurrentCulture))
+				.ToString();
 			_ = MessageBox.Show(
 				text: message,
 				caption: Localization.won,
@@ -779,7 +780,8 @@ namespace BlackAndWhite
 				centeredField: centeredField);
 		}
 
-		/// <summary>Begin a new game when the New Game split button is clicked</summary>
+		/// <summary>Begin a new game when the New Game split button is clicked</summary>
+
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
