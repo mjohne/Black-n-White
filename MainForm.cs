@@ -833,17 +833,18 @@ namespace BlackAndWhite
 		/// <summary>Output the statistics message on every tick</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
-			toolStripLabelStatistic.Text = new StringBuilder(Localization.statistics)
-				.Replace("{sumKlicks}", sumClicks.ToString(provider: CultureInfo.CurrentCulture))
-				.Replace("{sumTicks}", sumTicks.ToString(provider: CultureInfo.CurrentCulture))
-				.Replace("{numberBlacks}", numberBlacks.ToString(provider: CultureInfo.CurrentCulture))
-				.Replace("{numberWhites}", numberWhites.ToString(provider: CultureInfo.CurrentCulture))
-				.Replace("{sumInverts}", sumInverts.ToString(provider: CultureInfo.CurrentCulture))
-				.ToString();
+		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
+		private void Timer_Tick(object sender, EventArgs e)
+		{
+			sumTicks++;
+			CountColorsInGameBoard();
+			toolStripLabelStatistic.Text = new StringBuilder(Localization.statistics)
+				.Replace(oldValue: "{sumKlicks}", newValue: sumClicks.ToString(provider: CultureInfo.CurrentCulture))
 				.Replace(oldValue: "{sumTicks}", newValue: sumTicks.ToString(provider: CultureInfo.CurrentCulture))
 				.Replace(oldValue: "{numberBlacks}", newValue: numberBlacks.ToString(provider: CultureInfo.CurrentCulture))
 				.Replace(oldValue: "{numberWhites}", newValue: numberWhites.ToString(provider: CultureInfo.CurrentCulture))
-				.Replace(oldValue: "{sumInverts}", newValue: sumInverts.ToString(provider: CultureInfo.CurrentCulture));
+				.Replace(oldValue: "{sumInverts}", newValue: sumInverts.ToString(provider: CultureInfo.CurrentCulture))
+				.ToString();
 		}
 
 		#endregion
