@@ -5,65 +5,43 @@ using Office2007Rendering;
 
 namespace BlackAndWhite
 {
-	/// <summary>
-	/// Main form for the Black and White game application
-	/// </summary>
+	/// <summary>Main form for the Black and White game application</summary>
 	public partial class BlackAndWhiteForm : Form
 	{
 		#region Variables
 
-		/// <summary>
-		/// True if the game is started
-		/// </summary>
+		/// <summary>True if the game is started</summary>
 		private bool isGameStarted;
 
-		/// <summary>
-		/// Sum of the clicks
-		/// </summary>
+		/// <summary>Sum of the clicks</summary>
 		private int sumClicks;
 
-		/// <summary>
-		/// Sum of the ticks
-		/// </summary>
+		/// <summary>Sum of the ticks</summary>
 		private int sumTicks;
 
-		/// <summary>
-		/// Number of the black fields
-		/// </summary>
+		/// <summary>Number of the black fields</summary>
 		private int numberBlacks;
 
-		/// <summary>
-		/// Number of the white fields
-		/// </summary>
+		/// <summary>Number of the white fields</summary>
 		private int numberWhites;
 
-		/// <summary>
-		/// Sum of the inverted fields
-		/// </summary>
+		/// <summary>Sum of the inverted fields</summary>
 		private int sumInverts;
 
-		/// <summary>
-		/// Random number
-		/// </summary>
+		/// <summary>Random number</summary>
 		private readonly Random randomNumber = new();
 
-		/// <summary>
-		/// String builder
-		/// </summary>
+		/// <summary>String builder</summary>
 		private readonly StringBuilder stringBuilder = new();
 
-		/// <summary>
-		/// Culture info
-		/// </summary>
+		/// <summary>Culture info</summary>
 		private static readonly CultureInfo _culture = CultureInfo.CurrentUICulture;
 
 		#endregion
 
 		#region Helpers
 
-		/// <summary>
-		/// Apply resources to a control and its children
-		/// </summary>
+		/// <summary>Apply resources to a control and its children</summary>
 		/// <param name="res">Resource manager</param>
 		/// <param name="control">Control to apply resources to</param>
 		private static void ApplyResourceToControl(ComponentResourceManager res, Control control)
@@ -76,9 +54,7 @@ namespace BlackAndWhite
 			control.Text = text ?? control.Text;
 		}
 
-		/// <summary>
-		/// Set a specific text to the status bar
-		/// </summary>
+		/// <summary>Set a specific text to the status bar</summary>
 		/// <param name="text">Text with some information</param>
 		private void SetStatusBarText(string text)
 		{
@@ -86,9 +62,7 @@ namespace BlackAndWhite
 			toolStripStatusLabelInformation.Text = text;
 		}
 
-		/// <summary>
-		/// Return a randomized background color of the field
-		/// </summary>
+		/// <summary>Return a randomized background color of the field</summary>
 		/// <returns>Randomized background color</returns>
 		private Color RandomFieldColor()
 		{
@@ -100,9 +74,7 @@ namespace BlackAndWhite
 			};
 		}
 
-		/// <summary>
-		/// Invert the background colors of all fields
-		/// </summary>
+		/// <summary>Invert the background colors of all fields</summary>
 		/// <param name="fieldId">Array of field IDs to invert</param>
 		private void InvertFields(ushort[] fieldId)
 		{
@@ -169,9 +141,7 @@ namespace BlackAndWhite
 			}
 		}
 
-		/// <summary>
-		/// Invert the background color of a field
-		/// </summary>
+		/// <summary>Invert the background color of a field</summary>
 		/// <param name="color">Current background color</param>
 		/// <returns>Inverted background color</returns>
 		private Color InvertFieldColor(Color color)
@@ -182,9 +152,7 @@ namespace BlackAndWhite
 			return color == Color.Black ? Color.White : Color.Black;
 		}
 
-		/// <summary>
-		/// Init the game board
-		/// </summary>
+		/// <summary>Init the game board</summary>
 		private void InitGameBoard()
 		{
 			if (toolStripMenuItemNewGame3x3.Checked)
@@ -201,9 +169,7 @@ namespace BlackAndWhite
 			}
 		}
 
-		/// <summary>
-		/// Init the game board with the specified size
-		/// </summary>
+		/// <summary>Init the game board with the specified size</summary>
 		/// <param name="tableLayoutPanel">The TableLayoutPanel to initialize</param>
 		/// <param name="tabPage">The TabPage to set as parent</param>
 		private void InitGameBoard(TableLayoutPanel tableLayoutPanel, TabPage tabPage)
@@ -223,24 +189,16 @@ namespace BlackAndWhite
 			}
 		}
 
-		/// <summary>
-		/// Init the game board with the size 3x3
-		/// </summary>
+		/// <summary>Init the game board with the size 3x3</summary>
 		private void InitGameBoard3X3() => InitGameBoard(tableLayoutPanel: tableLayoutPanelGame3x3, tabPage: tabPageGame3x3);
 
-		/// <summary>
-		/// Init the game board with the size 4x4
-		/// </summary>
+		/// <summary>Init the game board with the size 4x4</summary>
 		private void InitGameBoard4X4() => InitGameBoard(tableLayoutPanel: tableLayoutPanelGame4x4, tabPage: tabPageGame4x4);
 
-		/// <summary>
-		/// Init the game board with the size 5x5
-		/// </summary>
+		/// <summary>Init the game board with the size 5x5</summary>
 		private void InitGameBoard5X5() => InitGameBoard(tableLayoutPanel: tableLayoutPanelGame5x5, tabPage: tabPageGame5x5);
 
-		/// <summary>
-		/// Count the colors of the game board
-		/// </summary>
+		/// <summary>Count the colors of the game board</summary>
 		private void CountColorsInGameBoard()
 		{
 			TableLayoutPanel? tableLayoutPanel = toolStripMenuItemNewGame3x3.Checked ? tableLayoutPanelGame3x3 :
@@ -265,9 +223,7 @@ namespace BlackAndWhite
 			}
 		}
 
-		/// <summary>
-		/// Check if all fields in the game board have the same color
-		/// </summary>
+		/// <summary>Check if all fields in the game board have the same color</summary>
 		/// <returns>true if all fields have the same color, otherwise false</returns>
 		private bool IsSameColorsInGameBoard()
 		{
@@ -297,9 +253,7 @@ namespace BlackAndWhite
 			return numbWhiteColor == totalFields || numbBlackColor == totalFields;
 		}
 
-		/// <summary>
-		/// Check for win in the game board
-		/// </summary>
+		/// <summary>Check for win in the game board</summary>
 		private void CheckForWinInGameBoard()
 		{
 			if (!isGameStarted)
@@ -313,18 +267,14 @@ namespace BlackAndWhite
 			}
 		}
 
-		/// <summary>
-		/// Count the colors and check for win in the game board
-		/// </summary>
+		/// <summary>Count the colors and check for win in the game board</summary>
 		private void CountColorsAndCheckForWinInGameBoard()
 		{
 			CountColorsInGameBoard();
 			CheckForWinInGameBoard();
 		}
 
-		/// <summary>
-		/// Finish the game
-		/// </summary>
+		/// <summary>Finish the game</summary>
 		private void FinishGame()
 		{
 			timer.Stop();
@@ -348,18 +298,14 @@ namespace BlackAndWhite
 
 		#region Constructor
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
+		/// <summary>Constructor</summary>
 		public BlackAndWhiteForm() => InitializeComponent();
 
 		#endregion
 
 		#region Load event handler
 
-		/// <summary>
-		/// Load the main window
-		/// </summary>
+		/// <summary>Load the main window</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -380,9 +326,8 @@ namespace BlackAndWhite
 
 		#region Statuslabel
 
-		/// <summary>
-		/// Set a specific text to the status bar
-		/// </summary>
+		/// <summary>Set a specific text to the status bar</summary>
+
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="e"/> is not needed, but must be indicated.</remarks>
@@ -402,9 +347,7 @@ namespace BlackAndWhite
 			}
 		}
 
-		/// <summary>
-		/// Set a specific field text to the status bar
-		/// </summary>
+		/// <summary>Set a specific field text to the status bar</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="e"/> is not needed, but must be indicated.</remarks>
@@ -425,9 +368,7 @@ namespace BlackAndWhite
 			toolStripStatusLabelInformation.Text = stringBuilder.ToString();
 		}
 
-		/// <summary>
-		/// Clear the text of the status bar
-		/// </summary>
+		/// <summary>Clear the text of the status bar</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -437,9 +378,7 @@ namespace BlackAndWhite
 
 		#region Click event handlers
 
-		/// <summary>
-		/// Init the game board 3x3 while clicking the ToolStripMenuItem
-		/// </summary>
+		/// <summary>Init the game board 3x3 while clicking the ToolStripMenuItem</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -452,9 +391,7 @@ namespace BlackAndWhite
 			InitGameBoard3X3();
 		}
 
-		/// <summary>
-		/// Init the game board 4x4 while clicking the ToolStripMenuItem
-		/// </summary>
+		/// <summary>Init the game board 4x4 while clicking the ToolStripMenuItem</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -467,9 +404,7 @@ namespace BlackAndWhite
 			InitGameBoard4X4();
 		}
 
-		/// <summary>
-		/// Init the game board 4x4 while clicking the ToolStripMenuItem
-		/// </summary>
+		/// <summary>Init the game board 4x4 while clicking the ToolStripMenuItem</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -482,9 +417,7 @@ namespace BlackAndWhite
 			InitGameBoard5X5();
 		}
 
-		/// <summary>
-		/// Active the linear field inverting while clicking the ToolStripMenuItem
-		/// </summary>
+		/// <summary>Active the linear field inverting while clicking the ToolStripMenuItem</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -495,9 +428,7 @@ namespace BlackAndWhite
 			toolStripMenuItemOptionCombined.Checked = false;
 		}
 
-		/// <summary>
-		/// Active the diagonal field inverting while clicking the ToolStripMenuItem
-		/// </summary>
+		/// <summary>Active the diagonal field inverting while clicking the ToolStripMenuItem</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -508,9 +439,7 @@ namespace BlackAndWhite
 			toolStripMenuItemOptionCombined.Checked = false;
 		}
 
-		/// <summary>
-		/// Active the combined field inverting while clicking the ToolStripMenuItem
-		/// </summary>
+		/// <summary>Active the combined field inverting while clicking the ToolStripMenuItem</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -521,9 +450,7 @@ namespace BlackAndWhite
 			toolStripMenuItemOptionCombined.Checked = true;
 		}
 
-		/// <summary>
-		/// Invert the neighbour fields
-		/// </summary>
+		/// <summary>Invert the neighbour fields</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <param name="linearNeightbourFields">array with ids of the linear neighbour fields</param>
@@ -559,9 +486,7 @@ namespace BlackAndWhite
 			CountColorsAndCheckForWinInGameBoard();
 		}
 
-		/// <summary>
-		/// Invert the neighbour fields while clicking on the button
-		/// </summary>
+		/// <summary>Invert the neighbour fields while clicking on the button</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="e"/> ist not needed, but must be indicated.</remarks>
@@ -832,9 +757,7 @@ namespace BlackAndWhite
 				centeredField: centeredField);
 		}
 
-		/// <summary>
-		/// Begin a new game while the ToolStripSplitButton
-		/// </summary>
+		/// <summary>Begin a new game when the New Game split button is clicked</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -844,10 +767,9 @@ namespace BlackAndWhite
 			toolStripMenuItemGameOptions.Enabled = true;
 			InitGameBoard();
 		}
+		/// <summary>Pause the current game when the Pause button is clicked</summary>
 
-		/// <summary>
-		/// Pause a new game while the ToolStripButton
-		/// </summary>
+		/// <summary>Pause a new game while the ToolStripButton</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -881,9 +803,7 @@ namespace BlackAndWhite
 
 		#region Tick event handlers
 
-		/// <summary>
-		/// Output the statistics message on every tick
-		/// </summary>
+		/// <summary>Output the statistics message on every tick</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
