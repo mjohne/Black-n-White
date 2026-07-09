@@ -292,10 +292,14 @@ namespace BlackAndWhite
 		{
 			timer.Stop();
 			timer.Enabled = false;
-			string message = new StringBuilder(Localization.wonMessage)
-				.Replace("{sumKlicks}", sumClicks.ToString(provider: CultureInfo.CurrentCulture))
-				.Replace("{sumTicks}", sumTicks.ToString(provider: CultureInfo.CurrentCulture))
-				.ToString();
+			string message = new StringBuilder(Localization.wonMessage)
+
+				.Replace("{sumKlicks}", sumClicks.ToString(provider: CultureInfo.CurrentCulture))
+
+				.Replace("{sumTicks}", sumTicks.ToString(provider: CultureInfo.CurrentCulture))
+
+				.ToString();
+
 			_ = MessageBox.Show(
 				text: message,
 				caption: Localization.won,
@@ -829,12 +833,13 @@ namespace BlackAndWhite
 		/// <summary>Output the statistics message on every tick</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
-		/// <remarks>The parameter <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
-		private void Timer_Tick(object sender, EventArgs e)
-		{
-			sumTicks++;
-			toolStripLabelStatistic.Text = Localization.statistics
-				.Replace(oldValue: "{sumKlicks}", newValue: sumClicks.ToString(provider: CultureInfo.CurrentCulture))
+			toolStripLabelStatistic.Text = new StringBuilder(Localization.statistics)
+				.Replace("{sumKlicks}", sumClicks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace("{sumTicks}", sumTicks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace("{numberBlacks}", numberBlacks.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace("{numberWhites}", numberWhites.ToString(provider: CultureInfo.CurrentCulture))
+				.Replace("{sumInverts}", sumInverts.ToString(provider: CultureInfo.CurrentCulture))
+				.ToString();
 				.Replace(oldValue: "{sumTicks}", newValue: sumTicks.ToString(provider: CultureInfo.CurrentCulture))
 				.Replace(oldValue: "{numberBlacks}", newValue: numberBlacks.ToString(provider: CultureInfo.CurrentCulture))
 				.Replace(oldValue: "{numberWhites}", newValue: numberWhites.ToString(provider: CultureInfo.CurrentCulture))
