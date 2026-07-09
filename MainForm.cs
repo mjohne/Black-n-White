@@ -326,8 +326,7 @@ namespace BlackAndWhite
 
 		#region Statuslabel
 
-		/// 
-		/// Set a specific text to the status bar</summary>
+		/// <summary>Set a specific text to the status bar</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="e"/> is not needed, but must be indicated.</remarks>
