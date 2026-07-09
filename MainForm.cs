@@ -757,7 +757,7 @@ namespace BlackAndWhite
 				centeredField: centeredField);
 		}
 
-		/// <summary>Begin a new game while the ToolStripSplitButton</summary>
+		/// <summary>Begin a new game when the New Game split button is clicked</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
@@ -767,7 +767,8 @@ namespace BlackAndWhite
 			toolStripMenuItemGameOptions.Enabled = true;
 			InitGameBoard();
 		}
-		/// <summary>Pause the current game when the Pause button is clicked</summary>
+		/// <summary>Pause the current game when the Pause button is clicked</summary>
+
 		/// <summary>Pause a new game while the ToolStripButton</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
