@@ -183,14 +183,22 @@ namespace BlackAndWhite
 			tabPageGame3x3.Parent = tabPage == tabPageGame3x3 ? tabControl : null;
 			tabPageGame4x4.Parent = tabPage == tabPageGame4x4 ? tabControl : null;
 			tabPageGame5x5.Parent = tabPage == tabPageGame5x5 ? tabControl : null;
+			const int maxRandomizeAttempts = 100;
+			int randomizeAttempts = 0;
 			do
 			{
 				foreach (Control button in tableLayoutPanel.Controls)
 				{
 					button.BackColor = RandomFieldColor();
 				}
+				randomizeAttempts++;
 			}
-			while (IsSameColorsInGameBoard(tableLayoutPanel: tableLayoutPanel));
+			while (IsSameColorsInGameBoard(tableLayoutPanel: tableLayoutPanel) && randomizeAttempts < maxRandomizeAttempts);
+			if (IsSameColorsInGameBoard(tableLayoutPanel: tableLayoutPanel) && tableLayoutPanel.Controls.Count > 0)
+			{
+				Control firstField = tableLayoutPanel.Controls[index: 0];
+				firstField.BackColor = firstField.BackColor == Color.Black ? Color.White : Color.Black;
+			}
 		}
 
 		/// <summary>Init the game board with the size 3x3</summary>
@@ -499,12 +507,7 @@ namespace BlackAndWhite
 		/// <remarks>The parameter <paramref name="e"/> ist not needed, but must be indicated.</remarks>
 		private void ButtonField_Click(object sender, EventArgs e)
 		{
-			if (sender is not Control control || control.Tag == null)
-			{
-				return;
-			}
-			string? fieldTag = control.Tag.ToString();
-			if (string.IsNullOrWhiteSpace(value: fieldTag))
+			if (sender is not Control { Tag: string fieldTag } || string.IsNullOrWhiteSpace(fieldTag))
 			{
 				return;
 			}
