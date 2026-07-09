@@ -326,7 +326,8 @@ namespace BlackAndWhite
 
 		#region Statuslabel
 
-		/// <summary>Set a specific text to the status bar</summary>
+		/// <summary>Set a specific text to the status bar</summary>
+
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
 		/// <remarks>The parameter <paramref name="e"/> is not needed, but must be indicated.</remarks>
@@ -766,7 +767,7 @@ namespace BlackAndWhite
 			toolStripMenuItemGameOptions.Enabled = true;
 			InitGameBoard();
 		}
-
+		/// <summary>Pause the current game when the Pause button is clicked</summary>
 		/// <summary>Pause a new game while the ToolStripButton</summary>
 		/// <param name="sender">object sender</param>
 		/// <param name="e">event arguments</param>
