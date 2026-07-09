@@ -183,10 +183,14 @@ namespace BlackAndWhite
 			tabPageGame3x3.Parent = tabPage == tabPageGame3x3 ? tabControl : null;
 			tabPageGame4x4.Parent = tabPage == tabPageGame4x4 ? tabControl : null;
 			tabPageGame5x5.Parent = tabPage == tabPageGame5x5 ? tabControl : null;
-			foreach (Control button in tableLayoutPanel.Controls)
+			do
 			{
-				button.BackColor = RandomFieldColor();
+				foreach (Control button in tableLayoutPanel.Controls)
+				{
+					button.BackColor = RandomFieldColor();
+				}
 			}
+			while (IsSameColorsInGameBoard(tableLayoutPanel: tableLayoutPanel));
 		}
 
 		/// <summary>Init the game board with the size 3x3</summary>
@@ -230,11 +234,14 @@ namespace BlackAndWhite
 			TableLayoutPanel? tableLayoutPanel = toolStripMenuItemNewGame3x3.Checked ? tableLayoutPanelGame3x3 :
 				toolStripMenuItemNewGame4x4.Checked ? tableLayoutPanelGame4x4 :
 				toolStripMenuItemNewGame5x5.Checked ? tableLayoutPanelGame5x5 : null;
+			return tableLayoutPanel != null && IsSameColorsInGameBoard(tableLayoutPanel: tableLayoutPanel);
+		}
 
-			if (tableLayoutPanel == null)
-			{
-				return false;
-			}
+		/// <summary>Check if all fields in the game board have the same color</summary>
+		/// <param name="tableLayoutPanel">The game board to check</param>
+		/// <returns>true if all fields have the same color, otherwise false</returns>
+		private bool IsSameColorsInGameBoard(TableLayoutPanel tableLayoutPanel)
+		{
 			int gameSize = tableLayoutPanel == tableLayoutPanelGame3x3 ? 3 :
 				tableLayoutPanel == tableLayoutPanelGame4x4 ? 4 : 5;
 			int numbWhiteColor = 0, numbBlackColor = 0;
@@ -492,11 +499,19 @@ namespace BlackAndWhite
 		/// <remarks>The parameter <paramref name="e"/> ist not needed, but must be indicated.</remarks>
 		private void ButtonField_Click(object sender, EventArgs e)
 		{
-			Control? control = sender as Control;
+			if (sender is not Control control || control.Tag == null)
+			{
+				return;
+			}
+			string? fieldTag = control.Tag.ToString();
+			if (string.IsNullOrWhiteSpace(value: fieldTag))
+			{
+				return;
+			}
 			ushort[] linearNeightbourFields = [0];
 			ushort[] diagonalNeightbourFields = [0];
 			ushort[] centeredField = [0];
-			switch (control.Tag.ToString())
+			switch (fieldTag)
 			{
 				case "311":
 					linearNeightbourFields = [312, 321];
@@ -748,6 +763,8 @@ namespace BlackAndWhite
 					diagonalNeightbourFields = [544];
 					centeredField = [555];
 					break;
+				default:
+					return;
 			}
 			InvertNeighbourFields(
 				sender: sender,
