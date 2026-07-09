@@ -34,6 +34,9 @@ namespace BlackAndWhite
 		/// <summary>String builder</summary>
 		private readonly StringBuilder stringBuilder = new();
 
+		/// <summary>Lookup of all game field buttons by field ID</summary>
+		private readonly Dictionary<ushort, Button> fieldButtonsById = [];
+
 		/// <summary>Culture info</summary>
 		private static readonly CultureInfo _culture = CultureInfo.CurrentUICulture;
 
@@ -62,6 +65,138 @@ namespace BlackAndWhite
 			toolStripStatusLabelInformation.Text = text;
 		}
 
+		/// <summary>Set one menu item checked and all other provided menu items unchecked</summary>
+		/// <param name="selected">Selected menu item</param>
+		/// <param name="otherItems">Other menu items</param>
+		private static void SetExclusiveChecked(ToolStripMenuItem selected, params ToolStripMenuItem[] otherItems)
+		{
+			selected.Checked = true;
+			foreach (ToolStripMenuItem item in otherItems)
+			{
+				item.Checked = false;
+			}
+		}
+
+		/// <summary>Get the currently selected game board and tab page</summary>
+		/// <returns>Selected game board and tab page</returns>
+		private (TableLayoutPanel GameBoard, TabPage GameTab) GetSelectedGameBoard()
+		{
+			if (toolStripMenuItemNewGame3x3.Checked)
+			{
+				return (GameBoard: tableLayoutPanelGame3x3, GameTab: tabPageGame3x3);
+			}
+
+			if (toolStripMenuItemNewGame4x4.Checked)
+			{
+				return (GameBoard: tableLayoutPanelGame4x4, GameTab: tabPageGame4x4);
+			}
+
+			return (GameBoard: tableLayoutPanelGame5x5, GameTab: tabPageGame5x5);
+		}
+
+		/// <summary>Get the currently active game board</summary>
+		/// <returns>Active game board or null if no game size is selected</returns>
+		private TableLayoutPanel? GetActiveGameBoard()
+		{
+			return toolStripMenuItemNewGame3x3.Checked ? tableLayoutPanelGame3x3 :
+				toolStripMenuItemNewGame4x4.Checked ? tableLayoutPanelGame4x4 :
+				toolStripMenuItemNewGame5x5.Checked ? tableLayoutPanelGame5x5 : null;
+		}
+
+		/// <summary>Get the game board size from its row count</summary>
+		/// <param name="tableLayoutPanel">Game board</param>
+		/// <returns>Size of one board side</returns>
+		private static int GetGameBoardSize(TableLayoutPanel tableLayoutPanel) => tableLayoutPanel.RowCount;
+
+		/// <summary>Try to parse a field ID from a string tag</summary>
+		/// <param name="fieldTag">Field tag</param>
+		/// <param name="fieldId">Parsed field ID</param>
+		/// <returns>true if parsing succeeded, otherwise false</returns>
+		private static bool TryParseFieldId(string fieldTag, out ushort fieldId) =>
+			ushort.TryParse(s: fieldTag, style: NumberStyles.None, provider: CultureInfo.InvariantCulture, result: out fieldId);
+
+		/// <summary>Try to decode a field ID into game board size, row and column</summary>
+		/// <param name="fieldId">Field ID</param>
+		/// <param name="boardSize">Board size</param>
+		/// <param name="row">Field row</param>
+		/// <param name="column">Field column</param>
+		/// <returns>true if decoding succeeded, otherwise false</returns>
+		private static bool TryDecodeFieldId(ushort fieldId, out int boardSize, out int row, out int column)
+		{
+			boardSize = fieldId / 100;
+			row = fieldId / 10 % 10;
+			column = fieldId % 10;
+			return boardSize is >= 3 and <= 5 &&
+				row >= 1 && row <= boardSize &&
+				column >= 1 && column <= boardSize;
+		}
+
+		/// <summary>Encode board size, row and column to a field ID</summary>
+		/// <param name="boardSize">Board size</param>
+		/// <param name="row">Field row</param>
+		/// <param name="column">Field column</param>
+		/// <returns>Encoded field ID</returns>
+		private static ushort EncodeFieldId(int boardSize, int row, int column) => (ushort)(boardSize * 100 + row * 10 + column);
+
+		/// <summary>Get neighboring field IDs for a center field</summary>
+		/// <param name="centerFieldId">Center field ID</param>
+		/// <param name="diagonal">true for diagonal neighbors, false for linear neighbors</param>
+		/// <returns>Neighboring field IDs</returns>
+		private static ushort[] GetNeighbourFieldIds(ushort centerFieldId, bool diagonal)
+		{
+			if (!TryDecodeFieldId(fieldId: centerFieldId, boardSize: out int boardSize, row: out int row, column: out int column))
+			{
+				return [];
+			}
+
+			List<ushort> neighbours = [];
+			for (int rowOffset = -1; rowOffset <= 1; rowOffset++)
+			{
+				for (int columnOffset = -1; columnOffset <= 1; columnOffset++)
+				{
+					if (rowOffset == 0 && columnOffset == 0)
+					{
+						continue;
+					}
+
+					bool isDiagonalOffset = Math.Abs(value: rowOffset) == 1 && Math.Abs(value: columnOffset) == 1;
+					if (diagonal != isDiagonalOffset)
+					{
+						continue;
+					}
+
+					int nextRow = row + rowOffset;
+					int nextColumn = column + columnOffset;
+					if (nextRow < 1 || nextRow > boardSize || nextColumn < 1 || nextColumn > boardSize)
+					{
+						continue;
+					}
+
+					neighbours.Add(item: EncodeFieldId(boardSize: boardSize, row: nextRow, column: nextColumn));
+				}
+			}
+
+			return [.. neighbours];
+		}
+
+		/// <summary>Build the game field button lookup from all game boards</summary>
+		private void BuildFieldButtonMap()
+		{
+			fieldButtonsById.Clear();
+			TableLayoutPanel[] gameBoards = [tableLayoutPanelGame3x3, tableLayoutPanelGame4x4, tableLayoutPanelGame5x5];
+			foreach (TableLayoutPanel gameBoard in gameBoards)
+			{
+				foreach (Control control in gameBoard.Controls)
+				{
+					if (control is Button { Tag: string fieldTag } button &&
+						TryParseFieldId(fieldTag: fieldTag, fieldId: out ushort fieldId))
+					{
+						fieldButtonsById[fieldId] = button;
+					}
+				}
+			}
+		}
+
 		/// <summary>Return a randomized background color of the field</summary>
 		/// <returns>Randomized background color</returns>
 		private Color RandomFieldColor()
@@ -80,61 +215,7 @@ namespace BlackAndWhite
 		{
 			foreach (ushort i in fieldId)
 			{
-				Button? button = i switch
-				{
-					311 => buttonGame3Field11,
-					312 => buttonGame3Field12,
-					313 => buttonGame3Field13,
-					321 => buttonGame3Field21,
-					322 => buttonGame3Field22,
-					323 => buttonGame3Field23,
-					331 => buttonGame3Field31,
-					332 => buttonGame3Field32,
-					333 => buttonGame3Field33,
-					411 => buttonGame4Field11,
-					412 => buttonGame4Field12,
-					413 => buttonGame4Field13,
-					414 => buttonGame4Field14,
-					421 => buttonGame4Field21,
-					422 => buttonGame4Field22,
-					423 => buttonGame4Field23,
-					424 => buttonGame4Field24,
-					431 => buttonGame4Field31,
-					432 => buttonGame4Field32,
-					433 => buttonGame4Field33,
-					434 => buttonGame4Field34,
-					441 => buttonGame4Field41,
-					442 => buttonGame4Field42,
-					443 => buttonGame4Field43,
-					444 => buttonGame4Field44,
-					511 => buttonGame5Field11,
-					512 => buttonGame5Field12,
-					513 => buttonGame5Field13,
-					514 => buttonGame5Field14,
-					515 => buttonGame5Field15,
-					521 => buttonGame5Field21,
-					522 => buttonGame5Field22,
-					523 => buttonGame5Field23,
-					524 => buttonGame5Field24,
-					525 => buttonGame5Field25,
-					531 => buttonGame5Field31,
-					532 => buttonGame5Field32,
-					533 => buttonGame5Field33,
-					534 => buttonGame5Field34,
-					535 => buttonGame5Field35,
-					541 => buttonGame5Field41,
-					542 => buttonGame5Field42,
-					543 => buttonGame5Field43,
-					544 => buttonGame5Field44,
-					545 => buttonGame5Field45,
-					551 => buttonGame5Field51,
-					552 => buttonGame5Field52,
-					553 => buttonGame5Field53,
-					554 => buttonGame5Field54,
-					555 => buttonGame5Field55,
-					_ => null
-				};
-				if (button != null)
+				if (fieldButtonsById.TryGetValue(key: i, value: out Button? button))
 				{
 					button.BackColor = InvertFieldColor(color: button.BackColor);
 				}
@@ -153,18 +234,8 @@ namespace BlackAndWhite
 		/// <summary>Init the game board</summary>
 		private void InitGameBoard()
 		{
-			if (toolStripMenuItemNewGame3x3.Checked)
-			{
-				InitGameBoard3X3();
-			}
-			else if (toolStripMenuItemNewGame4x4.Checked)
-			{
-				InitGameBoard4X4();
-			}
-			else
-			{
-				InitGameBoard5X5();
-			}
+			(TableLayoutPanel gameBoard, TabPage gameTab) = GetSelectedGameBoard();
+			InitGameBoard(tableLayoutPanel: gameBoard, tabPage: gameTab);
 		}
 
 		/// <summary>Init the game board with the specified size</summary>
@@ -211,9 +282,7 @@ namespace BlackAndWhite
 		/// <summary>Count the colors of the game board</summary>
 		private void CountColorsInGameBoard()
 		{
-			TableLayoutPanel? tableLayoutPanel = toolStripMenuItemNewGame3x3.Checked ? tableLayoutPanelGame3x3 :
-				toolStripMenuItemNewGame4x4.Checked ? tableLayoutPanelGame4x4 :
-				toolStripMenuItemNewGame5x5.Checked ? tableLayoutPanelGame5x5 : null;
+			TableLayoutPanel? tableLayoutPanel = GetActiveGameBoard();
 			numberBlacks = 0;
 			numberWhites = 0;
 			if (tableLayoutPanel == null)
@@ -237,9 +306,7 @@ namespace BlackAndWhite
 		/// <returns>true if all fields have the same color, otherwise false</returns>
 		private bool IsSameColorsInGameBoard()
 		{
-			TableLayoutPanel? tableLayoutPanel = toolStripMenuItemNewGame3x3.Checked ? tableLayoutPanelGame3x3 :
-				toolStripMenuItemNewGame4x4.Checked ? tableLayoutPanelGame4x4 :
-				toolStripMenuItemNewGame5x5.Checked ? tableLayoutPanelGame5x5 : null;
+			TableLayoutPanel? tableLayoutPanel = GetActiveGameBoard();
 			return tableLayoutPanel != null && IsSameColorsInGameBoard(tableLayoutPanel: tableLayoutPanel);
 		}
 
@@ -248,8 +315,7 @@ namespace BlackAndWhite
 		/// <returns>true if all fields have the same color, otherwise false</returns>
 		private bool IsSameColorsInGameBoard(TableLayoutPanel tableLayoutPanel)
 		{
-			int gameSize = tableLayoutPanel == tableLayoutPanelGame3x3 ? 3 :
-				tableLayoutPanel == tableLayoutPanelGame4x4 ? 4 : 5;
+			int gameSize = GetGameBoardSize(tableLayoutPanel: tableLayoutPanel);
 			int numbWhiteColor = 0, numbBlackColor = 0;
 			foreach (Control button in tableLayoutPanel.Controls)
 			{
@@ -319,7 +385,11 @@ namespace BlackAndWhite
 		#region Constructor
 
 		/// <summary>Constructor</summary>
-		public BlackAndWhiteForm() => InitializeComponent();
+		public BlackAndWhiteForm()
+		{
+			InitializeComponent();
+			BuildFieldButtonMap();
+		}
 
 		#endregion
 
@@ -404,9 +474,9 @@ namespace BlackAndWhite
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
 		private void ToolStripMenuItemNewGame3x3_Click(object sender, EventArgs e)
 		{
-			toolStripMenuItemNewGame3x3.Checked = true;
-			toolStripMenuItemNewGame4x4.Checked = false;
-			toolStripMenuItemNewGame5x5.Checked = false;
+			SetExclusiveChecked(
+				selected: toolStripMenuItemNewGame3x3,
+				otherItems: [toolStripMenuItemNewGame4x4, toolStripMenuItemNewGame5x5]);
 			tabControl.SelectedTab = tabPageGame3x3;
 			InitGameBoard3X3();
 		}
@@ -417,9 +487,9 @@ namespace BlackAndWhite
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
 		private void ToolStripMenuItemNewGame4x4_Click(object sender, EventArgs e)
 		{
-			toolStripMenuItemNewGame3x3.Checked = false;
-			toolStripMenuItemNewGame4x4.Checked = true;
-			toolStripMenuItemNewGame5x5.Checked = false;
+			SetExclusiveChecked(
+				selected: toolStripMenuItemNewGame4x4,
+				otherItems: [toolStripMenuItemNewGame3x3, toolStripMenuItemNewGame5x5]);
 			tabControl.SelectedTab = tabPageGame4x4;
 			InitGameBoard4X4();
 		}
@@ -430,9 +500,9 @@ namespace BlackAndWhite
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
 		private void ToolStripMenuItemNewGame5x5_Click(object sender, EventArgs e)
 		{
-			toolStripMenuItemNewGame3x3.Checked = false;
-			toolStripMenuItemNewGame4x4.Checked = false;
-			toolStripMenuItemNewGame5x5.Checked = true;
+			SetExclusiveChecked(
+				selected: toolStripMenuItemNewGame5x5,
+				otherItems: [toolStripMenuItemNewGame3x3, toolStripMenuItemNewGame4x4]);
 			tabControl.SelectedTab = tabPageGame5x5;
 			InitGameBoard5X5();
 		}
@@ -443,9 +513,9 @@ namespace BlackAndWhite
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
 		private void ToolStripMenuItemOptionLinear_Click(object sender, EventArgs e)
 		{
-			toolStripMenuItemOptionLinear.Checked = true;
-			toolStripMenuItemOptionDiagonal.Checked = false;
-			toolStripMenuItemOptionCombined.Checked = false;
+			SetExclusiveChecked(
+				selected: toolStripMenuItemOptionLinear,
+				otherItems: [toolStripMenuItemOptionDiagonal, toolStripMenuItemOptionCombined]);
 		}
 
 		/// <summary>Active the diagonal field inverting while clicking the ToolStripMenuItem</summary>
@@ -454,9 +524,9 @@ namespace BlackAndWhite
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
 		private void ToolStripMenuItemOptionDiagonal_Click(object sender, EventArgs e)
 		{
-			toolStripMenuItemOptionLinear.Checked = false;
-			toolStripMenuItemOptionDiagonal.Checked = true;
-			toolStripMenuItemOptionCombined.Checked = false;
+			SetExclusiveChecked(
+				selected: toolStripMenuItemOptionDiagonal,
+				otherItems: [toolStripMenuItemOptionLinear, toolStripMenuItemOptionCombined]);
 		}
 
 		/// <summary>Active the combined field inverting while clicking the ToolStripMenuItem</summary>
@@ -465,9 +535,9 @@ namespace BlackAndWhite
 		/// <remarks>The parameters <paramref name="sender"/> and <paramref name="e"/> are not needed, but must be indicated.</remarks>
 		private void ToolStripMenuItemOptionCombined_Click(object sender, EventArgs e)
 		{
-			toolStripMenuItemOptionLinear.Checked = false;
-			toolStripMenuItemOptionDiagonal.Checked = false;
-			toolStripMenuItemOptionCombined.Checked = true;
+			SetExclusiveChecked(
+				selected: toolStripMenuItemOptionCombined,
+				otherItems: [toolStripMenuItemOptionLinear, toolStripMenuItemOptionDiagonal]);
 		}
 
 		/// <summary>Invert the neighbour fields</summary>
@@ -514,268 +584,15 @@ namespace BlackAndWhite
 		/// <remarks>The parameter <paramref name="e"/> ist not needed, but must be indicated.</remarks>
 		private void ButtonField_Click(object sender, EventArgs e)
 		{
-			if (sender is not Control { Tag: string fieldTag } || string.IsNullOrWhiteSpace(fieldTag))
+			if (sender is not Control { Tag: string fieldTag } ||
+				string.IsNullOrWhiteSpace(value: fieldTag) ||
+				!TryParseFieldId(fieldTag: fieldTag, fieldId: out ushort centerFieldId))
 			{
 				return;
 			}
-			ushort[] linearNeightbourFields = [0];
-			ushort[] diagonalNeightbourFields = [0];
-			ushort[] centeredField = [0];
-			switch (fieldTag)
-			{
-				case "311":
-					linearNeightbourFields = [312, 321];
-					diagonalNeightbourFields = [322];
-					centeredField = [311];
-					break;
-				case "312":
-					linearNeightbourFields = [311, 313, 322];
-					diagonalNeightbourFields = [321, 323];
-					centeredField = [312];
-					break;
-				case "313":
-					linearNeightbourFields = [312, 323];
-					diagonalNeightbourFields = [322];
-					centeredField = [313];
-					break;
-				case "321":
-					linearNeightbourFields = [311, 322, 331];
-					diagonalNeightbourFields = [312, 332];
-					centeredField = [321];
-					break;
-				case "322":
-					linearNeightbourFields = [312, 321, 323, 332];
-					diagonalNeightbourFields = [311, 313, 331, 333];
-					centeredField = [322];
-					break;
-				case "323":
-					linearNeightbourFields = [313, 322, 333];
-					diagonalNeightbourFields = [312, 332];
-					centeredField = [323];
-					break;
-				case "331":
-					linearNeightbourFields = [321, 332];
-					diagonalNeightbourFields = [322];
-					centeredField = [331];
-					break;
-				case "332":
-					linearNeightbourFields = [322, 331, 333];
-					diagonalNeightbourFields = [321, 323];
-					centeredField = [332];
-					break;
-				case "333":
-					linearNeightbourFields = [323, 332];
-					diagonalNeightbourFields = [322];
-					centeredField = [333];
-					break;
-				case "411":
-					linearNeightbourFields = [412, 421];
-					diagonalNeightbourFields = [422];
-					centeredField = [411];
-					break;
-				case "412":
-					linearNeightbourFields = [411, 413, 422];
-					diagonalNeightbourFields = [421, 423];
-					centeredField = [412];
-					break;
-				case "413":
-					linearNeightbourFields = [412, 414, 423];
-					diagonalNeightbourFields = [422, 424];
-					centeredField = [413];
-					break;
-				case "414":
-					linearNeightbourFields = [413, 424];
-					diagonalNeightbourFields = [423];
-					centeredField = [414];
-					break;
-				case "421":
-					linearNeightbourFields = [411, 422, 431];
-					diagonalNeightbourFields = [412, 432];
-					centeredField = [421];
-					break;
-				case "422":
-					linearNeightbourFields = [412, 421, 423, 432];
-					diagonalNeightbourFields = [411, 413, 431, 433];
-					centeredField = [422];
-					break;
-				case "423":
-					linearNeightbourFields = [413, 422, 424, 433];
-					diagonalNeightbourFields = [412, 414, 432, 434];
-					centeredField = [423];
-					break;
-				case "424":
-					linearNeightbourFields = [414, 423, 434];
-					diagonalNeightbourFields = [413, 433];
-					centeredField = [424];
-					break;
-				case "431":
-					linearNeightbourFields = [421, 432, 441];
-					diagonalNeightbourFields = [422, 442];
-					centeredField = [431];
-					break;
-				case "432":
-					linearNeightbourFields = [422, 431, 433, 442];
-					diagonalNeightbourFields = [421, 423, 441, 443];
-					centeredField = [432];
-					break;
-				case "433":
-					linearNeightbourFields = [423, 432, 434, 443];
-					diagonalNeightbourFields = [422, 424, 442, 444];
-					centeredField = [433];
-					break;
-				case "434":
-					linearNeightbourFields = [424, 433, 444];
-					diagonalNeightbourFields = [423, 443];
-					centeredField = [434];
-					break;
-				case "441":
-					linearNeightbourFields = [431, 442];
-					diagonalNeightbourFields = [432];
-					centeredField = [441];
-					break;
-				case "442":
-					linearNeightbourFields = [432, 441, 443];
-					diagonalNeightbourFields = [431, 433];
-					centeredField = [442];
-					break;
-				case "443":
-					linearNeightbourFields = [433, 442, 444];
-					diagonalNeightbourFields = [432, 434];
-					centeredField = [443];
-					break;
-				case "444":
-					linearNeightbourFields = [434, 443];
-					diagonalNeightbourFields = [433];
-					centeredField = [444];
-					break;
-				case "511":
-					linearNeightbourFields = [512, 521];
-					diagonalNeightbourFields = [522];
-					centeredField = [511];
-					break;
-				case "512":
-					linearNeightbourFields = [511, 513, 522];
-					diagonalNeightbourFields = [521, 523];
-					centeredField = [512];
-					break;
-				case "513":
-					linearNeightbourFields = [512, 514, 523];
-					diagonalNeightbourFields = [522, 524];
-					centeredField = [513];
-					break;
-				case "514":
-					linearNeightbourFields = [513, 515, 524];
-					diagonalNeightbourFields = [523, 525];
-					centeredField = [514];
-					break;
-				case "515":
-					linearNeightbourFields = [514, 525];
-					diagonalNeightbourFields = [524];
-					centeredField = [515];
-					break;
-				case "521":
-					linearNeightbourFields = [511, 522, 531];
-					diagonalNeightbourFields = [512, 532];
-					centeredField = [521];
-					break;
-				case "522":
-					linearNeightbourFields = [512, 521, 523, 532];
-					diagonalNeightbourFields = [511, 513, 531, 533];
-					centeredField = [522];
-					break;
-				case "523":
-					linearNeightbourFields = [513, 522, 524, 533];
-					diagonalNeightbourFields = [512, 514, 532, 534];
-					centeredField = [523];
-					break;
-				case "524":
-					linearNeightbourFields = [514, 523, 525, 534];
-					diagonalNeightbourFields = [513, 515, 533, 535];
-					centeredField = [524];
-					break;
-				case "525":
-					linearNeightbourFields = [515, 524, 535];
-					diagonalNeightbourFields = [514, 534];
-					centeredField = [525];
-					break;
-				case "531":
-					linearNeightbourFields = [521, 532, 541];
-					diagonalNeightbourFields = [522, 542];
-					centeredField = [531];
-					break;
-				case "532":
-					linearNeightbourFields = [522, 531, 533, 542];
-					diagonalNeightbourFields = [521, 523, 541, 543];
-					centeredField = [532];
-					break;
-				case "533":
-					linearNeightbourFields = [523, 532, 534, 543];
-					diagonalNeightbourFields = [522, 524, 542, 544];
-					centeredField = [533];
-					break;
-				case "534":
-					linearNeightbourFields = [524, 533, 535, 544];
-					diagonalNeightbourFields = [523, 525, 543, 545];
-					centeredField = [534];
-					break;
-				case "535":
-					linearNeightbourFields = [525, 534, 545];
-					diagonalNeightbourFields = [524, 544];
-					centeredField = [535];
-					break;
-				case "541":
-					linearNeightbourFields = [531, 542, 551];
-					diagonalNeightbourFields = [532, 552];
-					centeredField = [541];
-					break;
-				case "542":
-					linearNeightbourFields = [532, 541, 543, 552];
-					diagonalNeightbourFields = [531, 533, 551, 553];
-					centeredField = [542];
-					break;
-				case "543":
-					linearNeightbourFields = [533, 542, 544, 553];
-					diagonalNeightbourFields = [532, 534, 552, 554];
-					centeredField = [543];
-					break;
-				case "544":
-					linearNeightbourFields = [534, 543, 545, 554];
-					diagonalNeightbourFields = [533, 535, 553, 555];
-					centeredField = [544];
-					break;
-				case "545":
-					linearNeightbourFields = [535, 544, 555];
-					diagonalNeightbourFields = [534, 554];
-					centeredField = [545];
-					break;
-				case "551":
-					linearNeightbourFields = [541, 552];
-					diagonalNeightbourFields = [542];
-					centeredField = [551];
-					break;
-				case "552":
-					linearNeightbourFields = [542, 551, 553];
-					diagonalNeightbourFields = [541, 543];
-					centeredField = [552];
-					break;
-				case "553":
-					linearNeightbourFields = [543, 552, 554];
-					diagonalNeightbourFields = [542, 544];
-					centeredField = [553];
-					break;
-				case "554":
-					linearNeightbourFields = [544, 553, 555];
-					diagonalNeightbourFields = [543, 545];
-					centeredField = [554];
-					break;
-				case "555":
-					linearNeightbourFields = [545, 554];
-					diagonalNeightbourFields = [544];
-					centeredField = [555];
-					break;
-				default:
-					return;
-			}
+			ushort[] linearNeightbourFields = GetNeighbourFieldIds(centerFieldId: centerFieldId, diagonal: false);
+			ushort[] diagonalNeightbourFields = GetNeighbourFieldIds(centerFieldId: centerFieldId, diagonal: true);
+			ushort[] centeredField = [centerFieldId];
 			InvertNeighbourFields(
 				sender: sender,
 				e: e,
