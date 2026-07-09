@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "M4RggXsr8j0=",
+  "success": true,
+  "projectFilePath": "/home/runner/work/Black-n-White/Black-n-White/Black'n'White.csproj",
+  "expectedPackageFiles": [
+    "/home/runner/.nuget/packages/nlog/5.5.0/nlog.5.5.0.nupkg.sha512",
+    "/home/runner/.nuget/packages/microsoft.windowsdesktop.app.ref/9.0.17/microsoft.windowsdesktop.app.ref.9.0.17.nupkg.sha512"
+  ],
+  "logs": []
+}
